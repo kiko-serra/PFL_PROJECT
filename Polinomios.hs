@@ -1,5 +1,7 @@
 import Data.Char   
 
+-- Example: "1 + 0 + x + 2*x + x^2 + 2*x^2 - 1 - x^-2"
+
 data Variables = Var { variable :: Char, degree :: Int} deriving (Show, Eq, Read)
 
 data Monomial = Mono { coefficient :: Int, variables :: [Variables]} deriving (Show, Eq, Read)
@@ -24,15 +26,10 @@ _breakString :: String -> [String]
 _breakString str = words (_addSpaceToBreak (str ++ [' '])) -- Space added to not fail functions
 
 
--- Split into separate Monomials -------
-
--- n
--- x
--- 2*x
--- x^2
 getCoefficient :: String -> Int
 getCoefficient str 
             | isDigit (head str) = read (takeWhile isDigit str) :: Int
+            | (head str) == '-' && isDigit (head (tail str)) = read ("-" ++ takeWhile isDigit (tail str)) :: Int
             | otherwise = 1
 
 getDegree :: String -> Int
@@ -41,7 +38,6 @@ getDegree str
             | otherwise = error "Degree not valid"
 
 coefficientFreeString :: String -> String
--- coefficientFreeString str = dropWhile isDigit str
 coefficientFreeString (c:str) 
             | isDigit c = coefficientFreeString str
             | c == '*' = coefficientFreeString str
@@ -58,6 +54,7 @@ getVariable :: String -> Variables
 getVariable (var:degree)
             | isLetter var && null degree = Var var 1
             | isLetter var && isDigit (head degree) = Var var (read degree :: Int)
+            | isLetter var && (head degree) == '-' && isDigit (head (tail degree)) = Var var (read degree :: Int)
             | otherwise = error "Degree not valid"
 
 getVariables :: [String] -> [Variables]
@@ -69,6 +66,10 @@ string2Monomial :: String -> Monomial
 string2Monomial str
             | length str == 1 && isDigit (head str) = Mono (digitToInt (head str)) [Var 'N' 0]
             | length str == 1 && isLetter (head str) = Mono 1 [Var (head str) 1]
+            | length str == 2 && head str == '-' && isDigit (head (tail str)) = Mono (negate (digitToInt (head (tail str)))) [Var 'N' 0]
+            | length str == 2 && head str == '-' && isLetter (head (tail str)) = Mono (negate 1) [Var (head (tail str)) 1]
+            | isDigit (head str) && digitToInt (head str) == 0 = Mono 0 []
+            | head str == '-' = Mono (negate (getCoefficient (tail str))) (getVariables (_breakString (coefficientFreeString (tail str))))
             | otherwise = Mono (getCoefficient str) (getVariables (_breakString (coefficientFreeString str)))
 
 
