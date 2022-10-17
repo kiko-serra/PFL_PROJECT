@@ -92,26 +92,42 @@ string2Polynomial str = auxString2Ponomial (breakString str)
 
 -- Transform Polynomial into a readable one -----------
 
+variables2StringV2 :: [Variables] -> String
+variables2StringV2 [] = []
+variables2StringV2 (var:remainder) 
+            | degree var == 0 = variables2String remainder
+            | degree var == 1 = [variable var] ++ variables2String remainder
+            | otherwise = [variable var] ++ ['^'] ++ show (degree var) ++ variables2String remainder
+         
+
 
 variables2String :: [Variables] -> String
 variables2String [] = []
 variables2String (var:remainder) 
             | degree var == 0 = variables2String remainder
+            | degree var == 1 = "*" ++ [variable var] ++ variables2String remainder
             | otherwise = "*" ++ [variable var] ++ ['^'] ++ show (degree var) ++ variables2String remainder
             
 
 monomial2String :: Monomial -> String
 monomial2String mono 
-            | (coefficient mono > 0) = "+" ++ show (coefficient mono) ++ variables2String (variables mono)
+            | (coefficient mono == 1) && degree (head (variables mono)) /= 0 = variables2StringV2 (variables mono)
+            | (coefficient mono == -1) && degree (head (variables mono)) /= 0 = "-" ++ variables2StringV2 (variables mono)
+            | (coefficient mono > 0) = show (coefficient mono) ++ variables2String (variables mono)
             | otherwise = show (coefficient mono) ++ variables2String (variables mono)
 
 polynomial2String :: Polynomial -> String
 polynomial2String [] = []
 polynomial2String (mono:poly) 
             | null poly = monomial2String mono
+            | coefficient (head poly) >= 0 = monomial2String mono ++ " + " ++ polynomial2String poly
             | otherwise = monomial2String mono ++ " " ++ polynomial2String poly
 
 -------------------------------------------------------
+
+test1 :: String
+test1 = "1 + 0 + x + 2*x + x^2 + 2*x^2 -1 -x -x^-2 + x^0 - x^0 + 2*x^0"
+
 
 main = do   
         putStrLn "Insert the polynomial: "
