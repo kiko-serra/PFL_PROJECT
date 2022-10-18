@@ -218,7 +218,7 @@ deriveTerm deriveVar term1
       deriveExpo
         = head (dropWhile (\ a -> var a /= deriveVar) (expos term1))
       newNumeric = termFloatSignal term1 * expoNum deriveExpo
-      nonDerivingTerms = [x | x <- expos term1, var x /= deriveVar]
+      nonDerivingTerms = [x | x <- expos term1, var x /= deriveVar] 
 
 -- function to derive 
 

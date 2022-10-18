@@ -228,9 +228,30 @@ multiplyPolynomials str1 str2 = parsePolynomial2String (auxMultPoly (cleanUpPoly
 
 
 --- d) derivate poly -----------------------------------
-derive :: Polynomial -> Polynomial
-derive [] = []
-derive poly = 
+filter :: Char -> Polynomial -> Polynomial
+filter n [] = []
+filter n xs =  [mono | mono <- xs, auxFilterVar (variables mono) == True]
+
+
+auxFilterVar :: Char -> [Variables] -> Bool
+auxFilterVar n [] = False
+auxFilterVar n (v:var)
+                | variable v == n = True
+                | otherwise = auxFilterVar n var
+
+derive :: Char -> Polynomial -> Polynomial
+derive n [] = []
+derive n poly = [actualDerive mono | mono <- poly]
+
+actualDerive :: Char -> Monomial -> Monomial
+actualDerive n mono = [degree x | x <- variables mono, x == m]
+
+--codigo emprestado
+deriveExpo
+        = head (dropWhile (\ a -> var a /= deriveVar) (expos term1))
+      newNumeric = termFloatSignal term1 * expoNum deriveExpo
+      nonDerivingTerms = [x | x <- expos term1, var x /= deriveVar]
+
 
 -------------------------------------------------------
 
