@@ -47,9 +47,9 @@ checkFloatString floatString = ((foldr (\x sum -> if x == '.' then sum+1 else su
                                 && (isDigit (last fixedString)) -- last element needs to be a number
                                 && ((isDigit (head fixedString)) || ((isSignal (head fixedString)) && (isDigit ((!!) fixedString 1)))) -- first elements need to be a number or signal and number
                                 where fixedString = surroudingParethesis floatString
-                                
+
 -- Transform a string in a float
-getFloatFromString:: String -> Float 
+getFloatFromString:: String -> Float
 getFloatFromString [] = 1
 getFloatFromString formString = if (checkFloatString formString) --check if string can be transformed into float
                                 then read formString :: Float
@@ -69,7 +69,7 @@ dropWhileList:: (a -> a -> Bool) -> [a] -> [a] -> [a]
 dropWhileList _ [] [] = []
 dropWhileList _ list1 [] = list1
 dropWhileList _ [] list2 = []
-dropWhileList cond list1 list2 = if cond (head list1) (head list2) 
+dropWhileList cond list1 list2 = if cond (head list1) (head list2)
                                     then [] ++ dropWhileList cond (tail list1) (tail list2)
                                     else list1
 
@@ -84,13 +84,13 @@ takeUntilSignal [] = []
 takeUntilSignal rcvString = if verifyDivision (takeWhile notSignal (tail rcvString))
                             then firstSubString
                             else firstSubString ++ takeUntilSignal (dropWhileList isEqual rcvString firstSubString)
-                            where 
+                            where
                                 firstSubString = [head rcvString]++(takeWhile notSignal (tail rcvString))
 
 -- divide string into substring with the terms of the polynomial
 smartStringDivider:: String -> [String]
 smartStringDivider [] = []
-smartStringDivider rcvString = firstString : smartStringDivider (dropWhileList isEqual rcvString firstString) where firstString = takeUntilSignal rcvString 
+smartStringDivider rcvString = firstString : smartStringDivider (dropWhileList isEqual rcvString firstString) where firstString = takeUntilSignal rcvString
 
 -- Splits a list using a as the divider
 split:: Eq a => a -> [a] -> [[a]]
@@ -130,14 +130,14 @@ expoGreaterVar expo1 expo2 = if (var expo1) >= (var expo2) then GT else LT
 
 -- function that compares the exponent of the highest "expo" to be used in sorting terms
 termGreaterExponent:: Term -> Term -> Ordering
-termGreaterExponent term1 term2 = if (expoNum (head (expos term1))) >= (expoNum (head (expos term2))) then LT else GT 
+termGreaterExponent term1 term2 = if (expoNum (head (expos term1))) >= (expoNum (head (expos term2))) then LT else GT
 
 -- function that compares the var of the highest "expo" to be used in sorting terms
 termGreaterVar:: Term -> Term -> Ordering
-termGreaterVar term1 term2 = if (var (head (expos term1))) >= (var (head (expos term2))) then GT else LT 
+termGreaterVar term1 term2 = if (var (head (expos term1))) >= (var (head (expos term2))) then GT else LT
 
 -- function to verify that all the varuables have the same exponent
-compareExpoNum:: Expo -> Expo -> Bool 
+compareExpoNum:: Expo -> Expo -> Bool
 compareExpoNum expo1 expo2 = (expoNum expo1) == (expoNum expo2)
 
 -- calculate the float using the signal and the numeric from a term
@@ -175,7 +175,7 @@ removeZeroPoli rcvPoli = [ x | x<- rcvPoli, (numeric x) /= 0]
 -- Funtion to get float with signal from Term
 termFloatSignal:: Term -> Float
 termFloatSignal rcvTerm = if (signal rcvTerm) == '+' then (numeric rcvTerm) else (-1*(numeric rcvTerm))
-                        
+
 
 -- NEXT FUNCTIONS
 
@@ -210,15 +210,15 @@ sumListTerms termList = foldr (sumTerms) firstTerm [ x | x <- (tail termList), (
 
 -- function to multiply numeric by expoNum then take 1 from expoNum (derivative)
 deriveTerm:: String ->Term -> Term
-deriveTerm deriveVar term1 = if length (expos term1) == 0
-                                then Term '+' 0 []
-                                else
-                                    if newNumeric >= 0
-                                    then Term '+'  newNumeric (Expo (var deriveExpo) ((expoNum deriveExpo)-1) : nonDerivingTerms)
-                                    else Term '-'  (-1*newNumeric) (Expo (var deriveExpo) ((expoNum deriveExpo)-1) : nonDerivingTerms)
-                                    where deriveExpo = (head (dropWhile (\a-> (var a) /= deriveVar) (expos term1)))
-                                          newNumeric = (termFloatSignal term1) * (expoNum deriveExpo)
-                                          nonDerivingTerms = [x | x <- (expos term1) , (var x) /= deriveVar]
+deriveTerm deriveVar term1
+  | null (expos term1) = Term '+' 0 []
+  | newNumeric >= 0 = Term '+'  newNumeric (Expo (var deriveExpo) (expoNum deriveExpo-1) : nonDerivingTerms)
+  | otherwise = Term '-'  (-1*newNumeric) (Expo (var deriveExpo) (expoNum deriveExpo-1) : nonDerivingTerms)
+  where
+      deriveExpo
+        = head (dropWhile (\ a -> var a /= deriveVar) (expos term1))
+      newNumeric = termFloatSignal term1 * expoNum deriveExpo
+      nonDerivingTerms = [x | x <- expos term1, var x /= deriveVar]
 
 -- function to derive 
 
@@ -245,7 +245,7 @@ joinStrings divider (x:xs) = foldl' (\a b -> a ++ [divider] ++ b) x xs
 
 -- function to transform expo into string
 expoToString:: Expo -> String
-expoToString rcvExpo = if (expoNum rcvExpo) > 0 
+expoToString rcvExpo = if (expoNum rcvExpo) > 0
                         then if (expoNum rcvExpo) == 1
                             then var rcvExpo
                             else (var rcvExpo) ++ "^" ++ (show (expoNum rcvExpo))

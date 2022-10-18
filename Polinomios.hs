@@ -227,6 +227,11 @@ multiplyPolynomials str1 str2 = parsePolynomial2String (auxMultPoly (cleanUpPoly
 
 
 
+--- d) derivate poly -----------------------------------
+derive :: Polynomial -> Polynomial
+derive [] = []
+derive poly = 
+
 -------------------------------------------------------
 
 main = do   
