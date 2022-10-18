@@ -1,4 +1,5 @@
 import Data.Char   
+import Data.List 
 
 -- Example: "1 + 0 + x + 2*x + x^2 + 2*x^2 -1 -x -x^-2 + x*y + 0*x*y"
 
@@ -6,9 +7,9 @@ import Data.Char
 
 -- Data -----------------------------------------------
 
-data Variables = Var { variable :: Char, degree :: Int} deriving (Show, Eq, Read)
+data Variables = Var { variable :: Char, degree :: Int} deriving (Show, Eq, Read, Ord)
 
-data Monomial = Mono { coefficient :: Int, variables :: [Variables]} deriving (Show, Eq, Read)
+data Monomial = Mono { coefficient :: Int, variables :: [Variables]} deriving (Show, Eq, Read, Ord)
 
 type Polynomial = [Monomial]
 
@@ -99,7 +100,7 @@ string2Polynomial :: String -> Polynomial
 string2Polynomial str =  clearPolynomial(removeCoeff0( auxString2Ponomial (breakString str)))
 
 
--- Clean poly
+-- Clear Polynomial of coefficient 0 and variables with degree 0
 
 removeCoeff0 :: Polynomial -> Polynomial
 removeCoeff0 [] = []
@@ -113,6 +114,30 @@ removeExponents vars = [v | v <- vars, (degree v) /= 0]
 clearPolynomial :: Polynomial -> Polynomial
 clearPolynomial [] = []
 clearPolynomial poly = [Mono (coefficient mono) (removeExponents (variables mono)) | mono <-poly]
+
+
+-- Sort (decreasing) and combine similar monomials
+
+sumCoefficients :: Polynomial -> Int
+sumCoefficients poly = sum [coefficient mono | mono <- poly]
+
+
+equalVariables :: [Variables] -> [Variables] -> Bool
+equalVariables slave tester = (sort slave) == (sort tester)
+
+clearUsedMonomials :: Monomial -> Polynomial -> Polynomial
+clearUsedMonomials mono poly = [eq_mono | eq_mono <- poly, not (equalVariables (variables mono) (variables eq_mono))]
+
+filteredMonomials :: Monomial -> Polynomial -> Polynomial
+filteredMonomials mono poly = [eq_mono | eq_mono <- poly, equalVariables (variables mono) (variables eq_mono)]
+
+
+
+auxNormalizePoly :: Polynomial -> Polynomial
+auxNormalizePoly [] = []
+auxNormalizePoly (mono:poly) = [Mono (sumCoefficients (mono:(filteredMonomials mono poly))) (variables mono)] ++ auxNormalizePoly (clearUsedMonomials mono poly)
+
+
 
 -- Transform Polynomial into a readable one -----------
 
@@ -149,8 +174,12 @@ polynomial2String (mono:poly)
 
 -------------------------------------------------------
 
-test1 :: String
-test1 = "1 + 0 + x + 2*x + x^2 + 2*x^2 -1 -x -x^-2"
+--- a) normalize poly ---------------------------------
+
+normalizePoly :: String -> String
+normalizePoly [] = []
+normalizePoly str = polynomial2String( clearPolynomial(removeCoeff0(auxNormalizePoly (string2Polynomial str))))
+
 
 
 main = do   
