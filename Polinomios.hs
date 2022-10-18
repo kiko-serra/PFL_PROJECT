@@ -1,6 +1,6 @@
 import Data.Char   
 
--- Example: "1 + 0 + x + 2*x + x^2 + 2*x^2 -1 -x -x^-2"
+-- Example: "1 + 0 + x + 2*x + x^2 + 2*x^2 -1 -x -x^-2 + x*y + 0*x*y"
 
 -- Variable 'N' refers to no variable --> 2 = 2*N^0
 
@@ -24,7 +24,7 @@ addSpace (c:str)
                 | c == ' ' = addSpace str
                 | c == '^' && head(str) == '-' = [c] ++ [head str] ++ addSpace (tail str)
                 | c == '-' = [' '] ++ [c] ++ addSpace str
-                | c == '+' = [' '] ++ addSpace str 
+                | c == '+' = [' '] ++ addSpace str
                 | otherwise = [c] ++ addSpace str
 
 
@@ -69,16 +69,26 @@ getVariables :: [String] -> [Variables]
 getVariables [] = []
 getVariables (str:strs) = [getVariable (parseForVariable str)] ++ getVariables strs
             
+addSpace2Variable :: String -> String
+addSpace2Variable [] = []
+addSpace2Variable (c:str)
+                | c == '*' = " " ++ addSpace2Variable str 
+                | otherwise = [c] ++ addSpace2Variable str
+
+
+splitVariable :: String -> [String]
+splitVariable [] = [[]]
+splitVariable str = words (addSpace2Variable (str ++ [' ']))
 
 string2Monomial :: String -> Monomial
 string2Monomial str
-            | length str == 1 && isDigit (head str) = Mono (digitToInt (head str)) [Var 'N' 0]
+            | length str == 1 && isDigit (head str) = Mono (digitToInt (head str)) []
             | length str == 1 && isLetter (head str) = Mono 1 [Var (head str) 1]
-            | length str == 2 && head str == '-' && isDigit (head (tail str)) = Mono (negate (digitToInt (head (tail str)))) [Var 'N' 0]
+            | length str == 2 && head str == '-' && isDigit (head (tail str)) = Mono (negate (digitToInt (head (tail str)))) []
             | length str == 2 && head str == '-' && isLetter (head (tail str)) = Mono (negate 1) [Var (head (tail str)) 1]
             | isDigit (head str) && digitToInt (head str) == 0 = Mono 0 []
-            | head str == '-' = Mono (negate (getCoefficient (tail str))) (getVariables (breakString (coefficientFreeString (tail str))))
-            | otherwise = Mono (getCoefficient str) (getVariables (breakString (coefficientFreeString str)))
+            | head str == '-' = Mono (negate (getCoefficient (tail str))) (getVariables (splitVariable (coefficientFreeString (tail str))))
+            | otherwise = Mono (getCoefficient str) (getVariables (splitVariable (coefficientFreeString str)))
 
 
 auxString2Ponomial :: [String] -> [Monomial]
@@ -86,9 +96,23 @@ auxString2Ponomial [] = []
 auxString2Ponomial (str:strs) = [string2Monomial str] ++ auxString2Ponomial strs
 
 string2Polynomial :: String -> Polynomial
-string2Polynomial str = auxString2Ponomial (breakString str)
-            
+string2Polynomial str =  clearPolynomial(removeCoeff0( auxString2Ponomial (breakString str)))
 
+
+-- Clean poly
+
+removeCoeff0 :: Polynomial -> Polynomial
+removeCoeff0 [] = []
+removeCoeff0 poly = [mono | mono <- poly, coefficient mono /= 0]
+
+
+removeExponents :: [Variables] -> [Variables]
+removeExponents [] = []
+removeExponents vars = [v | v <- vars, (degree v) /= 0]
+
+clearPolynomial :: Polynomial -> Polynomial
+clearPolynomial [] = []
+clearPolynomial poly = [Mono (coefficient mono) (removeExponents (variables mono)) | mono <-poly]
 
 -- Transform Polynomial into a readable one -----------
 
@@ -111,8 +135,8 @@ variables2String (var:remainder)
 
 monomial2String :: Monomial -> String
 monomial2String mono 
-            | (coefficient mono == 1) && degree (head (variables mono)) /= 0 = variables2StringV2 (variables mono)
-            | (coefficient mono == -1) && degree (head (variables mono)) /= 0 = "-" ++ variables2StringV2 (variables mono)
+            | (coefficient mono == 1) && not (null (variables mono)) = variables2StringV2 (variables mono)
+            | (coefficient mono == -1) && not (null (variables mono)) = "-" ++ variables2StringV2 (variables mono)
             | (coefficient mono > 0) = show (coefficient mono) ++ variables2String (variables mono)
             | otherwise = show (coefficient mono) ++ variables2String (variables mono)
 
@@ -126,7 +150,7 @@ polynomial2String (mono:poly)
 -------------------------------------------------------
 
 test1 :: String
-test1 = "1 + 0 + x + 2*x + x^2 + 2*x^2 -1 -x -x^-2 + x^0 - x^0 + 2*x^0"
+test1 = "1 + 0 + x + 2*x + x^2 + 2*x^2 -1 -x -x^-2"
 
 
 main = do   
