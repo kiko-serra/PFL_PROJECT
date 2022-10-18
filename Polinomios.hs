@@ -172,15 +172,62 @@ polynomial2String (mono:poly)
             | coefficient (head poly) >= 0 = monomial2String mono ++ " + " ++ polynomial2String poly
             | otherwise = monomial2String mono ++ " " ++ polynomial2String poly
 
+parsePolynomial2String :: Polynomial -> String
+parsePolynomial2String [] = []
+parsePolynomial2String poly = polynomial2String (clearPolynomial (removeCoeff0( auxNormalizePoly poly)))
+
+cleanUpPolynomial :: Polynomial -> Polynomial
+cleanUpPolynomial [] = []
+cleanUpPolynomial poly = clearPolynomial (removeCoeff0( auxNormalizePoly poly))
+
 -------------------------------------------------------
 
 --- a) normalize poly ---------------------------------
 
-normalizePoly :: String -> String
-normalizePoly [] = []
-normalizePoly str = polynomial2String( clearPolynomial(removeCoeff0(auxNormalizePoly (string2Polynomial str))))
+normalizePolynomials :: String -> String
+normalizePolynomials [] = []
+normalizePolynomials str = parsePolynomial2String(string2Polynomial str)
+
+--- b) add polynomials --------------------------------
+
+concatenateStrings :: String -> String -> String
+concatenateStrings [] [] = []
+concatenateStrings str1 str2
+                | head(str2) == '-' = str1 ++ " " ++ str2
+                | otherwise = str1 ++ " + " ++ str2
+
+addPolynomials :: String -> String -> String
+addPolynomials [] [] = error ("not a valid polynomial")
+addPolynomials str1 str2 = parsePolynomial2String( string2Polynomial (concatenateStrings str1  str2 ))
+
+--- c) multiply polynomials ----------------------------
+
+-- faz tuplos de vars, de seguida multiplica-os
+
+tupleVars :: [(Variables, Variables)] -> [Variables]
+tupleVars [] = []
+tupleVars (tuple:tuples)
+                | (variable (fst tuple)) == (variable (snd tuple)) = [Var (variable (fst tuple)) (degree (fst tuple) + degree (snd tuple))] ++ tupleVars tuples
+                | otherwise = [fst tuple] ++ [snd tuple]  ++ tupleVars tuples
+multVars :: [Variables] -> [Variables] -> [Variables]
+multVars [] [] = []
+multVars as bs = tupleVars (zip as bs)
+
+multMonos :: Monomial -> Monomial -> Monomial
+multMonos a b = Mono ((coefficient a) * (coefficient b)) (multVars (variables a) (variables b))
+
+auxMultPoly :: Polynomial -> Polynomial -> Polynomial
+auxMultPoly [] [] = []
+auxMultPoly a b = [ multMonos mono1 mono2 | mono1 <- a, mono2 <- b]
 
 
+multiplyPolynomials :: String -> String -> String
+multiplyPolynomials [] [] = []
+multiplyPolynomials str1 str2 = parsePolynomial2String (auxMultPoly (cleanUpPolynomial(string2Polynomial str1)) (cleanUpPolynomial(string2Polynomial str2)))
+
+
+
+-------------------------------------------------------
 
 main = do   
         putStrLn "Insert the polynomial: "
