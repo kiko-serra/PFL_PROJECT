@@ -241,11 +241,35 @@ multiplyPolynomials :: String -> String -> String
 multiplyPolynomials [] [] = []
 multiplyPolynomials str1 str2 = parsePolynomial2String (cleanUpPolynomial(auxMultPoly (cleanUpPolynomial(string2Polynomial str1)) (cleanUpPolynomial(string2Polynomial str2))))
 
---- d) derive polynomials ----------------------------
 
 
--- derivePolynomials :: Char -> String -> String
--- derivePolynomials _ [] = []
+--- d) derivate poly -----------------------------------
+filterWithVar :: Char -> Polynomial -> Polynomial
+filterWithVar n [] = []
+filterWithVar n xs =  [mono | mono <- xs, checkIfVarEq n (variables mono)]
+
+
+checkIfVarEq :: Char -> [Variables] -> Bool
+checkIfVarEq n [] = False
+checkIfVarEq n (v:var)
+                | variable v == n = True
+                | otherwise = checkIfVarEq n var
+
+
+--filterWithVar returns the polynimial only with derivable monomials
+
+derive :: Char -> String -> String
+derive n poly = parsePolynomial2String(map (calculateDerive n) (filterWithVar n (string2Polynomial poly)))
+
+calculateDerive :: Char -> Monomial -> Monomial
+calculateDerive n mono = head [Mono (coefficient mono * degree var) (degreeDown n [var]) | var <- variables mono, variable var == n]
+
+degreeDown :: Char -> [Variables] -> [Variables]
+degreeDown n [] = []
+degreeDown n (v:var)
+                | n /= variable v = v:degreeDown n var
+                | otherwise = Var (variable v) (degree v - 1):var
+
 
 
 -------------------------------------------------------
