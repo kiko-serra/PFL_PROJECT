@@ -262,7 +262,7 @@ derive :: Char -> String -> String
 derive n poly = parsePolynomial2String(map (calculateDerive n) (filterWithVar n (string2Polynomial poly)))
 
 calculateDerive :: Char -> Monomial -> Monomial
-calculateDerive n mono = head [Mono (coefficient mono * degree var) (degreeDown n [var]) | var <- variables mono, variable var == n]
+calculateDerive n mono = head [Mono (coefficient mono * degree var) (degreeDown n (variables mono)) | var <- variables mono, variable var == n]
 
 degreeDown :: Char -> [Variables] -> [Variables]
 degreeDown n [] = []
