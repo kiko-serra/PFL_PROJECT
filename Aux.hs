@@ -104,9 +104,8 @@ getVariable (var:degree)
 
 -- Transforms Polynomial into a readable String
 output :: Polynomial -> String
-output [] = []
-output poly = auxFuncPoly2String (clearPolynomial (perfectPolynomial poly))
-
+output [] = "0"
+output poly = auxFuncPoly2String (clearPolynomial(perfectPolynomial poly))
 
 -- Auxiliar function that puts spaces between monomials
 -- If the following monomial has a positive coefficient, puts '+' into the string
@@ -202,7 +201,10 @@ sortByDegree :: [Variable] -> [Variable]
 sortByDegree = sortBy (comparing degree)
 
 instance Ord Variable where
-    compare x y = compare (degree x) (degree y)
+    compare x y
+        | (degree x) > (degree y) = GT
+        | (degree x) < (degree y) = LT
+        | (degree x) == (degree y) = compare (variable y) (variable x)
 
 comparing :: (Ord a) => (b -> a) -> b -> b -> Ordering
 comparing v x y = compare (v y) (v x)
@@ -212,7 +214,10 @@ sortByVariable :: Polynomial -> Polynomial
 sortByVariable = sortBy (anotherComparing variables)
 
 instance Ord Monomial where
-    compare x y = compare (degree (head(variables x))) (degree (head(variables y)))
+    compare x y
+        | (degree (head(variables x))) > (degree (head(variables y))) = GT
+        | (degree (head(variables x))) < (degree (head(variables y))) = LT
+        | (degree (head(variables x))) == (degree (head(variables y))) = compare (length(variables x)) (length(variables y))
 
 anotherComparing :: (Ord a) => (b -> a) -> b -> b -> Ordering
 anotherComparing v x y = compare (v y) (v x)
