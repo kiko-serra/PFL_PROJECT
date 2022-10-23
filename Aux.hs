@@ -1,204 +1,145 @@
 module Aux where
-import Data.Char
-import Data.List
+import Data.Char   
+import Data.List 
 
--- Data definition -----------------------------------------------
+-------------------------------------------------------
+-- Data & Types ---------------------------------------
+-------------------------------------------------------
 
-data Variables = Var { variable :: Char, degree :: Int} deriving (Show, Eq, Read, Ord)
+data Variable = Var { variable :: Char, degree :: Int} deriving (Show, Eq, Read, Ord)
 
-data Monomial = Mono { coefficient :: Int, variables :: [Variables]} deriving (Show, Eq, Read, Ord)
+data Monomial = Mono { coefficient :: Int, variables :: [Variable]} deriving (Show, Eq, Read, Ord)
 
 type Polynomial = [Monomial]
 
--- Input / Output functions -------------------------------------
+-------------------------------------------------------
+-- Parsing string to polynomial
+-------------------------------------------------------
 
---Converts a string into a polynomial
-input :: String -> Polynomial
-input str =  clearPolynomial(removeCoeff0(auxString2Ponomial (breakString str)))
+-- Main function: Parses string to a polynomial
+parseString2Poly :: String -> Polynomial
+parseString2Poly str = [string2Monomial x | x <- (splitString str)]
 
---Converts a polynomial into a string
-output :: Polynomial -> String
-output [] = []
-output poly = polynomial2String (clearPolynomial (removeCoeff0(auxNormalizePoly poly)))
+-- Split candidate monomials into multiple strings when a space is found
+splitString :: String -> [String]
+splitString [] = [[]]
+splitString str = words (addSpace2String (str ++ [' ']))
 
---Auxiliary Input / Output functions -------------------------------------------
+-- Add space between 2 candidate monomials
+addSpace2String :: String -> String 
+addSpace2String [] = []
+addSpace2String (c:str)
+                | isDigit c && isLetter (head str) = [c] ++ ['*'] ++  addSpace2String str
+                | isLetter c && isLetter (head str) = [c] ++ ['*'] ++ addSpace2String str
+                | isLetter c && isDigit (head str) = [c] ++ ['*'] ++ addSpace2String str
+                | c == ' ' = addSpace2String str
+                | c == '^' && head(str) == '-' = [c] ++ [head str] ++ addSpace2String (tail str)
+                | c == '-' = [' '] ++ [c] ++ addSpace2String str
+                | c == '+' = [' '] ++ addSpace2String str
+                | otherwise = [c] ++ addSpace2String str
 
---Input Auxiliary functions
-
--- Space added to not fail functions
-breakString :: String -> [String]
-breakString str = words (addSpace (str ++ [' ']))
-
--- Add spaces to break into multiple strings ----------
-addSpace :: String -> String
-addSpace [] = []
-addSpace (c:str)
-                | isDigit c && isLetter (head str) = [c] ++ ['*'] ++  addSpace str
-                | isLetter c && isLetter (head str) = [c] ++ ['*'] ++ addSpace str
-                | c == ' ' = addSpace str
-                | c == '^' && head str == '-' = [c] ++ [head str] ++ addSpace (tail str)
-                | c == '-' = [' '] ++ [c] ++ addSpace str
-                | c == '+' = [' '] ++ addSpace str
-                | otherwise = [c] ++ addSpace str
-
-
-
---DESCRIPTION NEEDS TO BE ADDED
-auxString2Ponomial :: [String] -> [Monomial]
-auxString2Ponomial [] = []
-auxString2Ponomial (str:strs) = [string2Monomial str] ++ auxString2Ponomial strs
-
---DESCRIPTION NEEDS TO BE ADDED
+-- Constructs a monomial with the transformed string given
 string2Monomial :: String -> Monomial
 string2Monomial str
-            | length str == 1 && isDigit (head str) = Mono (digitToInt (head str)) []
+            | length str == 1 && isDigit  (head str) = Mono (digitToInt (head str)) []
             | length str == 1 && isLetter (head str) = Mono 1 [Var (head str) 1]
-            | length str == 2 && head str == '-' && isDigit (head (tail str)) = Mono (negate (digitToInt (head (tail str)))) []
-            | length str == 2 && head str == '-' && isLetter (head (tail str)) = Mono (negate 1) [Var (head (tail str)) 1]
+            | length str == 2 && isDigit  (head (tail str)) && head str == '-' = Mono (negate (digitToInt (head (tail str)))) []
+            | length str == 2 && isLetter (head (tail str)) && head str == '-' = Mono (negate 1) [Var (head (tail str)) 1]
             | isDigit (head str) && digitToInt (head str) == 0 = Mono 0 []
             | head str == '-' = Mono (negate (getCoefficient (tail str))) (getVariables (splitVariable (coefficientFreeString (tail str))))
             | otherwise = Mono (getCoefficient str) (getVariables (splitVariable (coefficientFreeString str)))
 
--- Get Coefficient from the string
+-- Get coefficient from the string, reading while it finds a digit
+-- Otherwise, the coefficient is 1
 getCoefficient :: String -> Int
-getCoefficient str
+getCoefficient str 
             | isDigit (head str) = read (takeWhile isDigit str) :: Int
-            | head str == '-' && isDigit (head (tail str)) = read ("-" ++ takeWhile isDigit (tail str)) :: Int
             | otherwise = 1
 
--- Get Variables from the string
-getVariables :: [String] -> [Variables]
-getVariables [] = []
-getVariables (str:strs) = [getVariable (parseForVariable str)] ++ getVariables strs
-
--- DESCRIPTION NEEDS TO BE ADDED
-parseForVariable :: String -> String
-parseForVariable [] = []
-parseForVariable (c:str)
-        | c == '^' = parseForVariable str
-        | otherwise = [c] ++ parseForVariable str
-
--- DESCRIPTION NEEDS TO BE ADDED
-getVariable :: String -> Variables
-getVariable (var:degree)
-            | isLetter var && null degree = Var var 1
-            | isLetter var && isDigit (head degree) = Var var (read degree :: Int)
-            | isLetter var && (head degree) == '-' && isDigit (head (tail degree)) = Var var (read degree :: Int)
-            | otherwise = error "Degree not valid"
-
--- DESCRIPTION NEEDS TO BE ADDED
-splitVariable :: String -> [String]
-splitVariable [] = [[]]
-splitVariable str = words (addSpace2Variable (str ++ [' ']))
-
--- DESCRIPTION NEEDS TO BE ADDED
-addSpace2Variable :: String -> String
-addSpace2Variable [] = []
-addSpace2Variable (c:str)
-                | c == '*' = " " ++ addSpace2Variable str
-                | otherwise = [c] ++ addSpace2Variable str
-
--- DESCRIPTION NEEDS TO BE ADDED
+-- Removes the coefficient from the string
+-- Retrieves variables and degrees
 coefficientFreeString :: String -> String
-coefficientFreeString (c:str)
+coefficientFreeString [] = []
+coefficientFreeString (c:str) 
             | isDigit c = coefficientFreeString str
             | c == '*' = coefficientFreeString str
             | otherwise = [c] ++ str
 
--- Clear Polynomial of coefficient 0 and variables with degree 0
-removeCoeff0 :: Polynomial -> Polynomial
-removeCoeff0 [] = []
-removeCoeff0 poly = [mono | mono <- poly, coefficient mono /= 0]
+-- Split variables string when a space is found
+splitVariable :: String -> [String]
+splitVariable [] = [[]]
+splitVariable str = words (addSpace2Variable (str ++ [' ']))
 
---DESCRIPTION NEEDS TO BE ADDED
-clearPolynomial :: Polynomial -> Polynomial
-clearPolynomial [] = []
-clearPolynomial poly = [Mono (coefficient mono) (filterExponents (variables mono)) | mono <-poly]
+-- Add space whenever a '*' is found on the string
+addSpace2Variable :: String -> String
+addSpace2Variable [] = []
+addSpace2Variable (c:str)
+                | c == '*' = " " ++ addSpace2Variable str 
+                | otherwise = [c] ++ addSpace2Variable str
 
---DESCRIPTION NEEDS TO BE ADDED
-filterExponents :: [Variables] -> [Variables]
-filterExponents [] = []
-filterExponents vars = sumDegFromSameExp(removeExponents vars)
+-- Creates an array of variables
+-- Calls getVariable function for each string
+getVariables :: [String] -> [Variable]
+getVariables [] = []
+getVariables strs = [getVariable (remExponentSymbol str) | str <- strs]
 
---DESCRIPTION NEEDS TO BE ADDED
-removeExponents :: [Variables] -> [Variables]
-removeExponents [] = []
-removeExponents vars = [v | v <- vars, degree v /= 0]
+-- Removes the exponent symbol from the string
+remExponentSymbol :: String -> String
+remExponentSymbol [] = []
+remExponentSymbol (c:str) 
+        | c == '^' = remExponentSymbol str
+        | otherwise = [c] ++ remExponentSymbol str
 
---DESCRIPTION NEEDS TO BE ADDED
-sumDegFromSameExp :: [Variables] -> [Variables]
-sumDegFromSameExp [] = []
-sumDegFromSameExp (var:vars) = [sumDeg(filterVar var (var:vars)) ] ++ sumDegFromSameExp (clearVar var (var:vars))
+-- Constructs a Variable with a given character and degree
+getVariable :: String -> Variable
+getVariable (var:degree)
+            | isLetter var && null degree = Var var 1
+            | isLetter var && isDigit (head degree) = Var var (read degree :: Int)
+            | isLetter var && (head degree) == '-' && isDigit (head (tail degree)) = Var var (read degree :: Int)
+            | otherwise = error "Variable degree not valid"
 
---DESCRIPTION NEEDS TO BE ADDED
-clearVar :: Variables -> [Variables] -> [Variables]
-clearVar var vars = [v | v <-vars, variable var /= variable v]
+-------------------------------------------------------
+-- Polynomial to String
+-------------------------------------------------------
 
-
---DESCRIPTION NEEDS TO BE ADDED
-filterVar :: Variables -> [Variables] -> [Variables]
-filterVar var vars = [v | v <-vars, variable var == variable v]
-
---DESCRIPTION NEEDS TO BE ADDED
-sumDeg :: [Variables] -> Variables
-sumDeg vars = Var (variable (head vars)) (sum[degree var | var <- vars])
-
---Output Auxiliary functions
-
---DESCRIPTION NEEDS TO BE ADDED
-auxNormalizePoly :: Polynomial -> Polynomial
-auxNormalizePoly [] = []
-auxNormalizePoly (mono:poly) = [Mono (sumCoefficients (mono:(filteredMonomials mono poly))) (variables mono)] ++ auxNormalizePoly (clearUsedMonomials mono poly)
-
---DESCRIPTION NEEDS TO BE ADDED
-clearUsedMonomials :: Monomial -> Polynomial -> Polynomial
-clearUsedMonomials mono poly = [eq_mono | eq_mono <- poly, not (equalVariables (variables mono) (variables eq_mono))]
-
---DESCRIPTION NEEDS TO BE ADDED
-equalVariables :: [Variables] -> [Variables] -> Bool
-equalVariables slave tester = (sort slave) == (sort tester)
-
---DESCRIPTION NEEDS TO BE ADDED
-filteredMonomials :: Monomial -> Polynomial -> Polynomial
-filteredMonomials mono poly = [eq_mono | eq_mono <- poly, equalVariables (variables mono) (variables eq_mono)]
-
---DESCRIPTION NEEDS TO BE ADDED
-sumCoefficients :: Polynomial -> Int
-sumCoefficients poly = sum [coefficient mono | mono <- poly]
-
---DESCRIPTION NEEDS TO BE ADDED
+-- Transforms Polynomial into a readable String
 polynomial2String :: Polynomial -> String
 polynomial2String [] = []
-polynomial2String (mono:poly)
-            | null poly = monomial2String mono
-            | coefficient (head poly) >= 0 = monomial2String mono ++ " + " ++ polynomial2String poly
-            | otherwise = monomial2String mono ++ " " ++ polynomial2String poly
+polynomial2String poly = auxFuncPoly2String (perfectPolynomial poly)
 
---DESCRIPTION NEEDS TO BE ADDED
+
+-- Auxiliar function that puts spaces between monomials
+-- If the following monomial has a positive coefficient, puts '+' into the string
+auxFuncPoly2String :: Polynomial -> String
+auxFuncPoly2String [] = []
+auxFuncPoly2String (mono:poly) 
+            | null poly = monomial2String mono
+            | coefficient (head poly) >= 0 = monomial2String mono ++ " + " ++ auxFuncPoly2String poly
+            | otherwise = monomial2String mono ++ " " ++ auxFuncPoly2String poly
+
+-- Transforms monomials into a readable string
+-- If the coefficient is either '1' or '-1', only the signal is showed
 monomial2String :: Monomial -> String
-monomial2String mono
-            | (coefficient mono == 1) && not (null (variables mono)) = variables2StringV2 (variables mono)
-            | (coefficient mono == -1) && not (null (variables mono)) = "-" ++ variables2StringV2 (variables mono)
-            | (coefficient mono > 0) = show (coefficient mono) ++ variables2String (variables mono)
+monomial2String mono 
+            | (coefficient mono == 1) && not (null (variables mono)) = noCoeffVar2String (variables mono)
+            | (coefficient mono == -1) && not (null (variables mono)) = "-" ++ noCoeffVar2String (variables mono)
             | otherwise = show (coefficient mono) ++ variables2String (variables mono)
 
---DESCRIPTION NEEDS TO BE ADDED
-variables2StringV2 :: [Variables] -> String
-variables2StringV2 [] = []
-variables2StringV2 (var:remainder)
-            | degree var == 0 = variables2String remainder
-            | degree var == 1 = [variable var] ++ variables2String remainder
-            | otherwise = [variable var] ++ ['^'] ++ show (degree var) ++ variables2String remainder
-
---DESCRIPTION NEEDS TO BE ADDED
-variables2String :: [Variables] -> String
+-- Transforms variables into a readable string
+-- Puts '*' to separate variables and '^' to show the degree
+variables2String :: [Variable] -> String
 variables2String [] = []
-variables2String (var:remainder)
+variables2String (var:remainder) 
             | degree var == 0 = variables2String remainder
             | degree var == 1 = "*" ++ [variable var] ++ variables2String remainder
             | otherwise = "*" ++ [variable var] ++ ['^'] ++ show (degree var) ++ variables2String remainder
 
---DESCRIPTION NEEDS TO BE ADDED
-cleanUpPolynomial :: Polynomial -> Polynomial
-cleanUpPolynomial [] = []
-cleanUpPolynomial poly = clearPolynomial (removeCoeff0( auxNormalizePoly poly))
+-- Similar to the variables2String function
+-- Doesn't put '*' at the start since there is no coefficient
+-- Calls the variables2String function for the remainder variables
+noCoeffVar2String :: [Variable] -> String
+noCoeffVar2String [] = []
+noCoeffVar2String (var:remainder) 
+            | degree var == 0 = variables2String remainder
+            | degree var == 1 = [variable var] ++ variables2String remainder
+            | otherwise = [variable var] ++ ['^'] ++ show (degree var) ++ variables2String remainder
