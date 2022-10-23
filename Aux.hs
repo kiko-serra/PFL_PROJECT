@@ -6,9 +6,9 @@ import Data.List
 -- Data & Types ---------------------------------------
 -------------------------------------------------------
 
-data Variable = Var { variable :: Char, degree :: Int} deriving (Show, Eq, Read, Ord)
+data Variable = Var { variable :: Char, degree :: Int} deriving (Show, Eq, Read)
 
-data Monomial = Mono { coefficient :: Int, variables :: [Variable]} deriving (Show, Eq, Read, Ord)
+data Monomial = Mono { coefficient :: Int, variables :: [Variable]} deriving (Show, Eq, Read)
 
 type Polynomial = [Monomial]
 
@@ -105,7 +105,7 @@ getVariable (var:degree)
 -- Transforms Polynomial into a readable String
 output :: Polynomial -> String
 output [] = []
-output poly = auxFuncPoly2String (clearPolynomial (normalizePolynomial poly))
+output poly = auxFuncPoly2String (clearPolynomial (perfectPolynomial poly))
 
 
 -- Auxiliar function that puts spaces between monomials
@@ -151,9 +151,10 @@ noCoeffVar2String (var:remainder)
 
 -- Sums the coefficient of monomials with the same variables and degrees
 -- Clears monomials with coefficient 0
-normalizePolynomial :: Polynomial -> Polynomial
-normalizePolynomial [] = []
-normalizePolynomial (mono:poly) = clearPolynomial (Mono (sumCoefficients (mono:filteredMonomials mono poly)) (variables mono) : normalizePolynomial (clearUsedMonomials mono poly))
+-- Orders by variable degree
+perfectPolynomial :: Polynomial -> Polynomial
+perfectPolynomial [] = []
+perfectPolynomial (mono:poly) = sortByVariable (clearPolynomial (Mono (sumCoefficients (mono:filteredMonomials mono poly)) (variables mono) : perfectPolynomial (clearUsedMonomials mono poly)))
 
 -- Filters monomials with the same variables as 'mono'
 filteredMonomials :: Monomial -> Polynomial -> Polynomial
@@ -174,10 +175,10 @@ clearPolynomial :: Polynomial -> Polynomial
 clearPolynomial [] = []
 clearPolynomial poly = [Mono (coefficient mono) (filterVariables (variables mono)) | mono <-poly, coefficient mono /= 0]
 
--- Removes variables with degree = 0
+-- Removes variables with degree = 0 & sorts them by degree
 filterVariables :: [Variable] -> [Variable]
 filterVariables [] = []
-filterVariables vars = [var | var <- joinVariables vars, degree var /= 0]
+filterVariables vars = sortByDegree[var | var <- joinVariables vars, degree var /= 0]
 
 -- Joins variables with the same character and sums the degree
 joinVariables :: [Variable] -> [Variable]
@@ -195,3 +196,23 @@ filterVar var vars = [v | v <-vars, variable var == variable v]
 -- Returns an array of variables with a different character as 'var'
 clearVar :: Variable -> [Variable] -> [Variable]
 clearVar var vars = [v | v <-vars, variable var /= variable v]
+
+-- Sorts Variables descendingly by degree
+sortByDegree :: [Variable] -> [Variable]
+sortByDegree = sortBy (comparing degree)
+
+instance Ord Variable where
+    compare x y = compare (degree x) (degree y)
+
+comparing :: (Ord a) => (b -> a) -> b -> b -> Ordering
+comparing v x y = compare (v y) (v x)
+
+
+sortByVariable :: Polynomial -> Polynomial
+sortByVariable = sortBy (anotherComparing variables)
+
+instance Ord Monomial where
+    compare x y = compare (degree (head(variables x))) (degree (head(variables y)))
+
+anotherComparing :: (Ord a) => (b -> a) -> b -> b -> Ordering
+anotherComparing v x y = compare (v y) (v x)

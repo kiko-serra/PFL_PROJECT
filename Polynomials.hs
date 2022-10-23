@@ -4,10 +4,12 @@ import Data.List
 -- a) Normalize Polynomial
 -------------------------------------------------------
 
+
+
 -- Normalize Polynomial
-perfectPolynomial :: String -> String
-perfectPolynomial [] = []
-perfectPolynomial poly = output (clearPolynomial (normalizePolynomial (input poly)))
+normalizePolynomial :: String -> String
+normalizePolynomial [] = []
+normalizePolynomial poly = output (clearPolynomial (perfectPolynomial (input poly)))
 
 -------------------------------------------------------
 -- b) Sum Polynomials
@@ -82,5 +84,26 @@ degreeDown c (v:var)
 -------------------------------------------------------
 -------------------------------------------------------
 
-test1 :: String
-test1 = perfectPolynomial "2x^2y +3"
+testNormalize1 :: Bool
+testNormalize1 = normalizePolynomial "0+1+2x+3y^2-4xy^3z" == "-4*y^3*x*z + 3*y^2 + 2*x + 1"
+
+testNormalize2 :: Bool
+testNormalize2 = normalizePolynomial "-1 +1 +x -x +x^2*x -x^2" == "x^3 -x^2"
+
+testNormalize3 :: Bool
+testNormalize3 = normalizePolynomial "x^3*x^-4 + y^3y^-3-1-2" == "x^-1 -2"
+
+testNormalize4 :: Bool
+testNormalize4 = normalizePolynomial "x^-3 + x^-2 + 1 + x^-1 + x + x^2" == "x^2 + x + x^-1 + x^-2 + x^-3 + 1"
+
+testAdd1 :: Bool
+testAdd1 = addPolynomials "x" "y" == "x + y"
+
+testAdd2 :: Bool
+testAdd2 = addPolynomials "a+b+c-2" "+2-4" == "a + b + c -4"
+
+testAdd3 :: Bool
+testAdd3 = addPolynomials "x+x-2y^2x" "x+x+y^2*x" == "-y^2*x + 4*x"
+
+testAdd4 :: Bool
+testAdd4 = addPolynomials "x+6xyz" "y + 5zyx" == " "

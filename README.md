@@ -6,11 +6,11 @@ O trabalho prático tem como objetivo implementar as seguintes funcções:
 - **multiplyPolynomials** - Função que multiplica polinómios
 - **derivePolynomial** - Função que deriva polinómios
 
-## Justificação da epresentaçã interna
-A representação interna dos polinómios é feita através de uma lista de momómio. Cada monónimo é representado por  2 elementos, o primeiro elemento é o coeficiente e o segundo elemento é uma lista de variaveis com cada variável e o respetivo grau. Escolhemos fazer esta divisão porque achamos que é mais fácil trabalhar com os polinómios desta forma.
+## Justificação da apresentação interna
+A representação interna dos polinómios é feita através de uma lista de momómios. Cada monónimo é representado por 2 elementos, sendo o primeiro o coeficiente e o segundo uma lista de variáveis. Cada variável vem acompanhada com o respetivo grau. Escolhemos fazer esta divisão porque achamos que é mais fácil trabalhar com os polinómios desta forma.
 
 ## Estratégia das funções Polynomials.hs
-### perfectPolynomialperfectPolynomial
+### perfectPolynomial
 Esta função soma os coeficientes dos monómios com as mesmas variaveis e graus, e remove os monómios com coeficiente 0 e retorna o polinómio como string.
 
 ### addPolynomials
