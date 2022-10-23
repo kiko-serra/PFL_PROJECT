@@ -9,53 +9,6 @@ perfectPolynomial :: Polynomial -> Polynomial
 perfectPolynomial [] = []
 perfectPolynomial poly = clearPolynomial (normalizePolynomial poly)
 
--- Sums the coefficient of monomials with the same variables and degrees
--- Clears monomials with coefficient 0
-normalizePolynomial :: Polynomial -> Polynomial
-normalizePolynomial [] = []
-normalizePolynomial (mono:poly) = clearPolynomial (Mono (sumCoefficients (mono:filteredMonomials mono poly)) (variables mono) : normalizePolynomial (clearUsedMonomials mono poly))
-
--- Filters monomials with the same variables as 'mono'
-filteredMonomials :: Monomial -> Polynomial -> Polynomial
-filteredMonomials mono poly = [eq_mono | eq_mono <- poly, sort (variables mono) == sort (variables eq_mono)]
-
--- Sums the coefficients from the filtered polynomials
-sumCoefficients :: Polynomial -> Int
-sumCoefficients poly = sum [coefficient mono | mono <- poly]
-
--- Removes monomials with the same variables as 'mono'
-clearUsedMonomials :: Monomial -> Polynomial -> Polynomial
-clearUsedMonomials mono poly = [eq_mono | eq_mono <- poly, sort (variables mono) /= sort (variables eq_mono)]
-
--- Goes through each monomial and Sums the degree of equal variables
--- Removes variables with degree = 0
--- Removes monomials with coefficient = 0
-clearPolynomial :: Polynomial -> Polynomial
-clearPolynomial [] = []
-clearPolynomial poly = [Mono (coefficient mono) (filterVariables (variables mono)) | mono <-poly, coefficient mono /= 0]
-
--- Removes variables with degree = 0
-filterVariables :: [Variable] -> [Variable]
-filterVariables [] = []
-filterVariables vars = [var | var <- joinVariables vars, degree var /= 0]
-
--- Joins variables with the same character and sums the degree
-joinVariables :: [Variable] -> [Variable]
-joinVariables [] = []
-joinVariables (var:vars) = sumDegree(filterVar var (var:vars)) : joinVariables (clearVar var (var:vars))
-
--- Sums the degree of the same variable
-sumDegree :: [Variable] -> Variable
-sumDegree vars = Var (variable (head vars)) (sum[degree var | var <- vars])
-
--- Returns an array of variables with the same character as 'var'
-filterVar :: Variable -> [Variable] -> [Variable]
-filterVar var vars = [v | v <-vars, variable var == variable v]
-
--- Returns an array of variables with a different character as 'var'
-clearVar :: Variable -> [Variable] -> [Variable]
-clearVar var vars = [v | v <-vars, variable var /= variable v]
-
 -------------------------------------------------------
 -- b) Sum Polynomials
 -------------------------------------------------------
@@ -123,7 +76,6 @@ degreeDown c [] = []
 degreeDown c (v:var)
                 | c /= variable v = v:degreeDown c var
                 | otherwise = Var (variable v) (degree v - 1):var
-
 
 
 -------------------------------------------------------
