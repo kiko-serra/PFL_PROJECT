@@ -148,6 +148,7 @@ noCoeffVar2String (var:remainder)
 -------------------------------------------------------
 -- Normalize auxliars
 -------------------------------------------------------
+
 -- Sums the coefficient of monomials with the same variables and degrees
 -- Clears monomials with coefficient 0
 normalizePolynomial :: Polynomial -> Polynomial

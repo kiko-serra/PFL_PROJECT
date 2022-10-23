@@ -5,9 +5,9 @@ import Data.List
 -------------------------------------------------------
 
 -- Normalize Polynomial
-perfectPolynomial :: Polynomial -> Polynomial
+perfectPolynomial :: String -> String
 perfectPolynomial [] = []
-perfectPolynomial poly = clearPolynomial (normalizePolynomial poly)
+perfectPolynomial poly = output (clearPolynomial (normalizePolynomial (input poly)))
 
 -------------------------------------------------------
 -- b) Sum Polynomials
@@ -50,8 +50,8 @@ multMonos a b = Mono (coefficient a * coefficient b) (variables a ++ variables b
 -------------------------------------------------------
 
 -- Derive Polynomial to a variable 'c'
-derive :: Char -> String -> String
-derive c poly = output(map (calculateDerive c) (filterVariable c (input poly)))
+derivePolnomial :: Char -> String -> String
+derivePolnomial c poly = output(map (calculateDerive c) (filterVariable c (input poly)))
 
 
 -- Filters the monomials that have the variable 'c'
@@ -66,7 +66,7 @@ checkIfVarEq c (v:var)
                 | variable v == c = True
                 | otherwise = checkIfVarEq c var
 
--- 
+-- Calculates the derivative of a monomial
 calculateDerive :: Char -> Monomial -> Monomial
 calculateDerive c mono = head [Mono (coefficient mono * degree var) (degreeDown c (variables mono)) | var <- variables mono, variable var == c]
 
@@ -81,3 +81,6 @@ degreeDown c (v:var)
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
+
+test1 :: String
+test1 = perfectPolynomial "2x^2y +3"
