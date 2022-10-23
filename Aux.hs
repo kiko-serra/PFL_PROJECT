@@ -209,7 +209,7 @@ instance Ord Variable where
 comparing :: (Ord a) => (b -> a) -> b -> b -> Ordering
 comparing v x y = compare (v y) (v x)
 
-
+-- Sorts Monomials descendingly by the maximum degree of their variables
 sortByVariable :: Polynomial -> Polynomial
 sortByVariable = sortBy (anotherComparing variables)
 
