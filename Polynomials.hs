@@ -47,9 +47,12 @@ auxMultPoly :: Polynomial -> Polynomial -> Polynomial
 auxMultPoly [] [] = []
 auxMultPoly a b = [ multMonos mono1 mono2 | mono1 <- a, mono2 <- b]
 
+
 --- d) derivate poly -----------------------------------
+
+
 derivePolynomial :: Char -> String -> String
-derivePolynomial n poly = output(map (calculateDerive n) (filterWithVar n (input poly)))
+derivePolynomial n poly = output(map (calculateDerivation n) (filterWithVar n (input poly)))
 
 --Returns the polynimial only with derivable monomials
 filterWithVar :: Char -> Polynomial -> Polynomial
@@ -64,10 +67,10 @@ checkIfVarEq n (v:var)
                 | otherwise = checkIfVarEq n var
 
 --Calculates the derivative of a monomial
-calculateDerive :: Char -> Monomial -> Monomial
-calculateDerive n mono = head [Mono (coefficient mono * degree var) (degreeDown n (variables mono)) | var <- variables mono, variable var == n]
+calculateDerivation :: Char -> Monomial -> Monomial
+calculateDerivation n mono = head [Mono (coefficient mono * degree var) (degreeDown n (variables mono)) | var <- variables mono, variable var == n]
 
---Aux to calculateDerive to decrease the degree of a variable
+--Aux to calculateDerivation to decrease the degree of a variable
 degreeDown :: Char -> [Variables] -> [Variables]
 degreeDown n [] = []
 degreeDown n (v:var)
