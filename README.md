@@ -25,8 +25,9 @@ O trabalho prático tem como objetivo implementar as seguintes funcções:
         - testDerive3
         - testDerive4
         
- *Os casos de teste estão presentes no ficheiro `Polynomials.hs`. Em cada um é utilizado a respetiva função em causa, pelo que no fim é comparado o *output* das mesmas com o caso esperado. 
-
+ * *Os casos de teste estão presentes no ficheiro `Polynomials.hs`. Em cada um é utilizado a respetiva função em causa, pelo que no fim é comparado o *output* das mesmas com o caso esperado. 
+ 
+ * Para dar load às funções, deve correr, no ghci, o comando `:l Polynomials.hs` 
 
 ## Justificação da apresentação interna
 A representação interna dos polinómios é feita através de uma lista de momómios. Cada monónimo (*typeclass*) é representado por 2 elementos, sendo o primeiro o coeficiente e o segundo uma lista de variáveis. Cada variável (*typeclass*) vem acompanhada com o respetivo grau. Esta divisão mostrou ser mais apropriada para elaborar as respetivas funções dos polinómios.
