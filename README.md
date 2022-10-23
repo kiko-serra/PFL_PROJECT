@@ -9,10 +9,13 @@ O trabalho prático tem como objetivo implementar as seguintes funcções:
 
 ## Funções Polynomials.hs
 ### normalizePolynomials
+Esta função soma os coeficientes dos monómios com as mesmas variaveis e graus, e remove os monómios com coeficiente 0 e retorna o polinómio como string.
 
 ### addPolynomials
+Esta função soma dois polinómios com a ajuda fa cunção auxiliar 'concatenateStrings'. No caso dos polinómios serem nulos retorna um erro, se não retorna o polinómio resultante da soma como string.
 
 ### multiplyPolynomials
+Esta função multiplica dois polinómios com a ajuda das funções auxiliares 'distributiveLaw' e 'multMonos'. Retorna o polinómio resultante da multiplicação como string.
 
 ### derivePolynomial
 Comecamos por definir uma função auxiliar 'filterWithVar' que recebe o polinómio inicial e a variavel para derivar e retorna um polinómio que apenas contém monómios com a variavel a derivar. Depois definimos a função 'calculateDerivation' que recebe o polinómio e a variavel a derivar e retorna o polinómio derivado, usando uma outra função auxiliar para decrementar o grau da variavel derivada.

@@ -1,6 +1,6 @@
 module Aux where
-import Data.Char   
-import Data.List 
+import Data.Char
+import Data.List
 
 -------------------------------------------------------
 -- Data & Types ---------------------------------------
@@ -17,8 +17,8 @@ type Polynomial = [Monomial]
 -------------------------------------------------------
 
 -- Main function: Parses string to a polynomial
-parseString2Poly :: String -> Polynomial
-parseString2Poly str = [string2Monomial x | x <- (splitString str)]
+input :: String -> Polynomial
+input str = [string2Monomial x | x <- splitString str]
 
 -- Split candidate monomials into multiple strings when a space is found
 splitString :: String -> [String]
@@ -26,14 +26,14 @@ splitString [] = [[]]
 splitString str = words (addSpace2String (str ++ [' ']))
 
 -- Add space between 2 candidate monomials
-addSpace2String :: String -> String 
+addSpace2String :: String -> String
 addSpace2String [] = []
 addSpace2String (c:str)
                 | isDigit c && isLetter (head str) = [c] ++ ['*'] ++  addSpace2String str
                 | isLetter c && isLetter (head str) = [c] ++ ['*'] ++ addSpace2String str
                 | isLetter c && isDigit (head str) = [c] ++ ['*'] ++ addSpace2String str
                 | c == ' ' = addSpace2String str
-                | c == '^' && head(str) == '-' = [c] ++ [head str] ++ addSpace2String (tail str)
+                | c == '^' && head str == '-' = [c] ++ [head str] ++ addSpace2String (tail str)
                 | c == '-' = [' '] ++ [c] ++ addSpace2String str
                 | c == '+' = [' '] ++ addSpace2String str
                 | otherwise = [c] ++ addSpace2String str
@@ -52,7 +52,7 @@ string2Monomial str
 -- Get coefficient from the string, reading while it finds a digit
 -- Otherwise, the coefficient is 1
 getCoefficient :: String -> Int
-getCoefficient str 
+getCoefficient str
             | isDigit (head str) = read (takeWhile isDigit str) :: Int
             | otherwise = 1
 
@@ -60,7 +60,7 @@ getCoefficient str
 -- Retrieves variables and degrees
 coefficientFreeString :: String -> String
 coefficientFreeString [] = []
-coefficientFreeString (c:str) 
+coefficientFreeString (c:str)
             | isDigit c = coefficientFreeString str
             | c == '*' = coefficientFreeString str
             | otherwise = [c] ++ str
@@ -74,7 +74,7 @@ splitVariable str = words (addSpace2Variable (str ++ [' ']))
 addSpace2Variable :: String -> String
 addSpace2Variable [] = []
 addSpace2Variable (c:str)
-                | c == '*' = " " ++ addSpace2Variable str 
+                | c == '*' = " " ++ addSpace2Variable str
                 | otherwise = [c] ++ addSpace2Variable str
 
 -- Creates an array of variables
@@ -86,7 +86,7 @@ getVariables strs = [getVariable (remExponentSymbol str) | str <- strs]
 -- Removes the exponent symbol from the string
 remExponentSymbol :: String -> String
 remExponentSymbol [] = []
-remExponentSymbol (c:str) 
+remExponentSymbol (c:str)
         | c == '^' = remExponentSymbol str
         | otherwise = [c] ++ remExponentSymbol str
 
@@ -103,16 +103,16 @@ getVariable (var:degree)
 -------------------------------------------------------
 
 -- Transforms Polynomial into a readable String
-polynomial2String :: Polynomial -> String
-polynomial2String [] = []
-polynomial2String poly = auxFuncPoly2String (perfectPolynomial poly)
+output :: Polynomial -> String
+output [] = []
+output poly = auxFuncPoly2String (perfectPolynomial poly)
 
 
 -- Auxiliar function that puts spaces between monomials
 -- If the following monomial has a positive coefficient, puts '+' into the string
 auxFuncPoly2String :: Polynomial -> String
 auxFuncPoly2String [] = []
-auxFuncPoly2String (mono:poly) 
+auxFuncPoly2String (mono:poly)
             | null poly = monomial2String mono
             | coefficient (head poly) >= 0 = monomial2String mono ++ " + " ++ auxFuncPoly2String poly
             | otherwise = monomial2String mono ++ " " ++ auxFuncPoly2String poly
@@ -120,7 +120,7 @@ auxFuncPoly2String (mono:poly)
 -- Transforms monomials into a readable string
 -- If the coefficient is either '1' or '-1', only the signal is showed
 monomial2String :: Monomial -> String
-monomial2String mono 
+monomial2String mono
             | (coefficient mono == 1) && not (null (variables mono)) = noCoeffVar2String (variables mono)
             | (coefficient mono == -1) && not (null (variables mono)) = "-" ++ noCoeffVar2String (variables mono)
             | otherwise = show (coefficient mono) ++ variables2String (variables mono)
@@ -129,7 +129,7 @@ monomial2String mono
 -- Puts '*' to separate variables and '^' to show the degree
 variables2String :: [Variable] -> String
 variables2String [] = []
-variables2String (var:remainder) 
+variables2String (var:remainder)
             | degree var == 0 = variables2String remainder
             | degree var == 1 = "*" ++ [variable var] ++ variables2String remainder
             | otherwise = "*" ++ [variable var] ++ ['^'] ++ show (degree var) ++ variables2String remainder
@@ -139,7 +139,7 @@ variables2String (var:remainder)
 -- Calls the variables2String function for the remainder variables
 noCoeffVar2String :: [Variable] -> String
 noCoeffVar2String [] = []
-noCoeffVar2String (var:remainder) 
+noCoeffVar2String (var:remainder)
             | degree var == 0 = variables2String remainder
             | degree var == 1 = [variable var] ++ variables2String remainder
             | otherwise = [variable var] ++ ['^'] ++ show (degree var) ++ variables2String remainder
