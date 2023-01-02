@@ -1,5 +1,8 @@
 # PFL - Trabalho Prático 1
-O trabalho prático tem como objetivo implementar as seguintes funcções:
+
+Nota: 18.3
+
+O trabalho prático tem como objetivo implementar as seguintes funções:
 - ***normalizePolynomials*** - Função que normaliza polinómios
     - Casos de teste *:
         - testNormalize1
